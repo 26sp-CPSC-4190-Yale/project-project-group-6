@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, flash, render_template, request, jsonify, redirect, url_for
 import pandas as pd
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 
 ############################################################
 #database stuff
@@ -12,15 +13,23 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True)
     username = db.Column(db.String(150), unique=True)
-    password = db.Column(db.String(150))
+    password_hash = db.Column(db.String(150))
   
     def __repr__(self):
         return f'{self.username}'
+    
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
 
 ############################################################
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev-key'
+app.secret_key = 'your_secret_key'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 
@@ -248,8 +257,9 @@ def login():
 
         user = User.query.filter_by(email=email).first()
         if user:
-            if user.password ==  password:
+            if user.check_password(password):
                 login_user(user, remember=True)
+                flash("Login successful!", "success") 
                 return redirect(url_for('home'))
             else:
                 return "Incorrect password."
@@ -282,7 +292,9 @@ def signup():
         elif len(email) < 4:
             return "Email is not valid."
         else:
-            new_user = User(email=email, username=username, password=password1)
+            # add user to db
+            new_user = User(email=email, username=username)
+            new_user.set_password(password1)
 
             db.session.add(new_user)
             db.session.commit()
