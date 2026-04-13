@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>College Match Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      line-height: 1.5;
+      background: #f7f7f7;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      text-align: center;
+      margin-bottom: 24px;
+      color: #555;
+    }
+
+    form {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .question-group {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .question-group:last-child {
+      border-bottom: none;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    .checkbox-group,
+    .radio-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .checkbox-group label,
+    .radio-group label {
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 0;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .college-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 16px;
+  background: #fafafa;
+}
+
+.college-card h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.college-card p {
+  margin: 6px 0;
+}
+
+    button {
+      background: black;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 16px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    #results {
+      margin-top: 24px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <p><a href="{{ url_for('logout') }}">Logout</a></p>
+  <p><a href="{{ url_for('home') }}">Home</a></p>
+  <h1>Find Your Best-Fit College</h1>
+  <p class="subtitle">Answer a few questions and we’ll recommend schools that match your goals.</p>
+
+  <form id="collegeQuiz">
+    <div class="question-group">
+      <label for="gpa">1. What is your high school GPA?</label>
+      <input type="number" step="0.01" min="0" max="4.0" id="gpa" name="gpa" />
+    </div>
+
+    <div class="question-group">
+      <label for="satScore">2. What is your SAT/ACT score?</label>
+      <input type="number" id="satScore" name="satScore" placeholder="Enter SAT equivalent score" />
+    </div>
+
+    <div class="question-group">
+      <label for="selectivity">3. How important is selectivity to you?</label>
+      <select id="selectivity" name="selectivity">
+        <option value="">Select one</option>
+        <option value="very selective">Very selective</option>
+        <option value="selective">Selective</option>
+        <option value="not selective">Not selective</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="schoolType">4. What type of school do you prefer?</label>
+      <select id="schoolType" name="schoolType">
+        <option value="">Select one</option>
+        <option value="2-year">2-year college</option>
+        <option value="4-year">4-year college</option>
+        <option value="trade">Trade/technical school</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="gradProgram">5. Do you want a school with a graduate program?</label>
+      <select id="gradProgram" name="gradProgram">
+        <option value="">Select one</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+        <option value="does not matter">Does not matter</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="familyIncome">6. How much does your family make a year?</label>
+      <select id="familyIncome" name="familyIncome">
+        <option value="">Select one</option>
+        <option value="0-30000">$0–$30,000</option>
+        <option value="30001-48000">$30,001–$48,000</option>
+        <option value="48001-75000">$48,001–$75,000</option>
+        <option value="75001-110000">$75,001–$110,000</option>
+        <option value="110001-plus">$110,001+</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="budget">7. How much do you want to pay per year?</label>
+      <input type="number" id="budget" name="budget" placeholder="Enter annual budget in dollars" />
+    </div>
+
+    <div class="question-group">
+      <label for="financialAid">8. Do you plan to use financial aid?</label>
+      <select id="financialAid" name="financialAid">
+        <option value="">Select one</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="loans">9. Are you willing to take student loans?</label>
+      <select id="loans" name="loans">
+        <option value="">Select one</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+        <option value="maybe">Maybe</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="salaryGoal">10. What is your expected salary goal after graduation?</label>
+      <input type="number" id="salaryGoal" name="salaryGoal" placeholder="Enter target salary" />
+    </div>
+
+    <div class="question-group">
+      <label for="gradSchoolPlan">11. Do you plan to attend graduate school?</label>
+      <select id="gradSchoolPlan" name="gradSchoolPlan">
+        <option value="">Select one</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+        <option value="maybe">Maybe</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="locale">12. Do you prefer urban, suburban, or rural?</label>
+      <select id="locale" name="locale">
+        <option value="">Select one</option>
+        <option value="urban">Urban</option>
+        <option value="suburban">Suburban</option>
+        <option value="rural">Rural</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="campusType">13. Do you want a commuter school or residential campus?</label>
+      <select id="campusType" name="campusType">
+        <option value="">Select one</option>
+        <option value="commuter">Commuter</option>
+        <option value="residential">Residential</option>
+        <option value="does not matter">Does not matter</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="diversity">14. Do you want a diverse student body?</label>
+      <select id="diversity" name="diversity">
+        <option value="">Select one</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+        <option value="does not matter">Does not matter</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="religiousAffiliation">15. Do you want a religious-affiliated school?</label>
+      <select id="religiousAffiliation" name="religiousAffiliation">
+        <option value="">Select one</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+        <option value="does not matter">Does not matter</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="greekLife">16. Do you care about Greek life?</label>
+      <select id="greekLife" name="greekLife">
+        <option value="">Select one</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+        <option value="does not matter">Does not matter</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="sportsCulture">17. Do you care about sports culture?</label>
+      <select id="sportsCulture" name="sportsCulture">
+        <option value="">Select one</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+        <option value="does not matter">Does not matter</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="size">18. Do you want a large or small college?</label>
+      <select id="size" name="size">
+        <option value="">Select one</option>
+        <option value="small">Small</option>
+        <option value="medium">Medium</option>
+        <option value="large">Large</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="attendance">19. Do you want to attend part-time or full-time?</label>
+      <select id="attendance" name="attendance">
+        <option value="">Select one</option>
+        <option value="part-time">Part-time</option>
+        <option value="full-time">Full-time</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="locationPreference">20. Do you want to stay in-state or go out of state?</label>
+      <select id="locationPreference" name="locationPreference">
+        <option value="">Select one</option>
+        <option value="in-state">In-state</option>
+        <option value="out-of-state">Out of state</option>
+      </select>
+    </div>
+
+    <div class="question-group hidden" id="homeStateGroup">
+      <label for="homeState">If in-state, where do you live?</label>
+      <select id="homeState" name="homeState">
+        <option value="">Select state</option>
+        <option value="AL">Alabama</option>
+        <option value="CA">California</option>
+        <option value="CT">Connecticut</option>
+        <option value="FL">Florida</option>
+        <option value="GA">Georgia</option>
+        <option value="IL">Illinois</option>
+        <option value="MA">Massachusetts</option>
+        <option value="MI">Michigan</option>
+        <option value="NC">North Carolina</option>
+        <option value="NJ">New Jersey</option>
+        <option value="NY">New York</option>
+        <option value="PA">Pennsylvania</option>
+        <option value="TX">Texas</option>
+        <option value="VA">Virginia</option>
+      </select>
+    </div>
+
+    <div class="question-group hidden" id="usOrInternationalGroup">
+      <label for="usOrInternational">If out of state, do you want to stay in the US or go international?</label>
+      <select id="usOrInternational" name="usOrInternational">
+        <option value="">Select one</option>
+        <option value="us">Stay in the US</option>
+        <option value="international">Go international</option>
+      </select>
+    </div>
+
+    <div class="question-group hidden" id="preferredStatesGroup">
+      <label for="preferredStates">If in the US, what state do you prefer?</label>
+      <select id="preferredStates" name="preferredStates">
+        <option value="">Select state</option>
+        <option value="AL">Alabama</option>
+        <option value="CA">California</option>
+        <option value="CT">Connecticut</option>
+        <option value="FL">Florida</option>
+        <option value="GA">Georgia</option>
+        <option value="IL">Illinois</option>
+        <option value="MA">Massachusetts</option>
+        <option value="MI">Michigan</option>
+        <option value="NC">North Carolina</option>
+        <option value="NJ">New Jersey</option>
+        <option value="NY">New York</option>
+        <option value="PA">Pennsylvania</option>
+        <option value="TX">Texas</option>
+        <option value="VA">Virginia</option>
+      </select>
+    </div>
+
+    <div class="question-group hidden" id="preferredCountryGroup">
+      <label for="preferredCountry">If international, what country do you prefer?</label>
+      <select id="preferredCountry" name="preferredCountry">
+        <option value="">Select country</option>
+        <option value="Canada">Canada</option>
+        <option value="United Kingdom">United Kingdom</option>
+        <option value="France">France</option>
+        <option value="Germany">Germany</option>
+        <option value="Italy">Italy</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="major">21. What areas of study are you interested in?</label>
+      <select id="major" name="major">
+        <option value="">Select one</option>
+        <option value="computer science">Computer Science</option>
+        <option value="business">Business</option>
+        <option value="economics">Economics</option>
+        <option value="engineering">Engineering</option>
+        <option value="biology">Biology</option>
+        <option value="psychology">Psychology</option>
+        <option value="political science">Political Science</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label for="specialMission">22. Do you want a college with a special mission or affiliation?</label>
+      <select id="specialMission" name="specialMission">
+        <option value="">Select one</option>
+        <option value="none">No preference</option>
+        <option value="HBCU">HBCU</option>
+        <option value="PBI">PBI</option>
+        <option value="ANNHI">ANNHI</option>
+        <option value="TRIBAL">TRIBAL</option>
+        <option value="AANAPII">AANAPII</option>
+      </select>
+    </div>
+
+    <div class="question-group">
+      <label>23. What factors matter most to you? Pick up to 3.</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="priorities" value="cost" /> Cost</label>
+        <label><input type="checkbox" name="priorities" value="location" /> Location</label>
+        <label><input type="checkbox" name="priorities" value="major" /> Major</label>
+        <label><input type="checkbox" name="priorities" value="salary" /> Salary</label>
+        <label><input type="checkbox" name="priorities" value="size" /> Size</label>
+      </div>
+    </div>
+
+    <button type="submit">Submit Quiz</button>
+  </form>
+
+  <div id="results" class="hidden"></div>
+
+  <script>
+    const form = document.getElementById("collegeQuiz");
+    const resultsDiv = document.getElementById("results");
+  
+    const locationPreference = document.getElementById("locationPreference");
+    const homeStateGroup = document.getElementById("homeStateGroup");
+    const usOrInternationalGroup = document.getElementById("usOrInternationalGroup");
+    const usOrInternational = document.getElementById("usOrInternational");
+    const preferredStatesGroup = document.getElementById("preferredStatesGroup");
+    const preferredCountryGroup = document.getElementById("preferredCountryGroup");
+  
+    locationPreference.addEventListener("change", () => {
+      const value = locationPreference.value;
+  
+      homeStateGroup.classList.add("hidden");
+      usOrInternationalGroup.classList.add("hidden");
+      preferredStatesGroup.classList.add("hidden");
+      preferredCountryGroup.classList.add("hidden");
+  
+      if (value === "in-state") {
+        homeStateGroup.classList.remove("hidden");
+      } else if (value === "out-of-state") {
+        usOrInternationalGroup.classList.remove("hidden");
+      }
+    });
+  
+    usOrInternational.addEventListener("change", () => {
+      const value = usOrInternational.value;
+  
+      preferredStatesGroup.classList.add("hidden");
+      preferredCountryGroup.classList.add("hidden");
+  
+      if (value === "us") {
+        preferredStatesGroup.classList.remove("hidden");
+      } else if (value === "international") {
+        preferredCountryGroup.classList.remove("hidden");
+      }
+    });
+  
+    function formatMoney(value) {
+      if (value === null || value === undefined) return "N/A";
+      return "$" + value.toLocaleString();
+    }
+  
+    function renderRecommendations(colleges) {
+      if (!colleges.length) {
+        resultsDiv.innerHTML = "<p>No recommendations found.</p>";
+        resultsDiv.classList.remove("hidden");
+        return;
+      }
+  
+      let html = `<h2>Your Recommended Colleges</h2>`;
+  
+      colleges.forEach((college, index) => {
+        html += `
+          <div class="college-card">
+            <h3>${index + 1}. ${college.name}</h3>
+            <p><strong>State:</strong> ${college.state || "N/A"}</p>
+            <p><strong>Campus Size:</strong> ${college.size || "N/A"}</p>
+            <p><strong>Setting:</strong> ${college.locale || "N/A"}</p>
+            <p><strong>Net Price:</strong> ${formatMoney(college.net_price)}</p>
+            <p><strong>Admission Rate:</strong> ${college.admission_rate !== null ? college.admission_rate + "%" : "N/A"}</p>
+            <p><strong>Median Earnings:</strong> ${formatMoney(college.salary)}</p>
+            <p><strong>Match Score:</strong> ${college.match_score}</p>
+          </div>
+        `;
+      });
+  
+      resultsDiv.innerHTML = html;
+      resultsDiv.classList.remove("hidden");
+      resultsDiv.scrollIntoView({ behavior: "smooth" });
+    }
+  
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+  
+      const checkedPriorities = [...document.querySelectorAll('input[name="priorities"]:checked')];
+      if (checkedPriorities.length > 3) {
+        alert("Please choose no more than 3 priorities.");
+        return;
+      }
+  
+      const formData = new FormData(form);
+      const data = {};
+  
+      for (const [key, value] of formData.entries()) {
+        if (key === "priorities") {
+          if (!data[key]) data[key] = [];
+          data[key].push(value);
+        } else {
+          data[key] = value;
+        }
+      }
+  
+      try {
+        const response = await fetch("/recommend", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to fetch recommendations.");
+        }
+  
+        const colleges = await response.json();
+        renderRecommendations(colleges);
+  
+      } catch (error) {
+        resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+        resultsDiv.classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+</html>
