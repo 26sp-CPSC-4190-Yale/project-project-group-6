@@ -1,1 +1,18 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/D8kToVOh)
+# How to Run: 
+(after cloning and cd'ing into repo)
+
+## 1. Create Virtual Environment
+On Mac/Linux: ``` python3 -m venv venv ```
+
+
+## 2. Activate Virtual Environment
+``` source venv/bin/activate ```
+
+## 3. Install dependencies from requirements.txt
+``` pip install -r requirements.txt ```
+
+## 4. Run server
+``` python app.py ```
+
+## 5. Open in browser
+http://127.0.0.1:5000/
