@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Profile | CollegeMatch</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #dbeafe, #eef2ff);
+      margin: 0;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: 40px auto;
+      background: white;
+      padding: 32px;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    h1 {
+      text-align: center;
+      color: #2563eb;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 16px;
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 24px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Create Your Profile</h1>
+
+    <form method="POST" action="{{ url_for('create_profile') }}" enctype="multipart/form-data">
+        <label for="photo">Upload Profile Photo</label>
+        <input type="file" id="photo" name="photo">
+
+      <label for="full_name">Full Name</label>
+      <input type="text" id="full_name" name="full_name" required value="{{ profile.full_name if profile else '' }}">
+
+      <label for="education_level">Education Level</label>
+      <select id="education_level" name="education_level" required>
+        <option value="">Select one</option>
+        <option value="In High School">In High School</option>
+        <option value="Graduated High School">Graduated High School</option>
+        <option value="In College">In College</option>
+        <option value="Graduated College">Graduated College</option>
+        <option value="Advisor or Recruiter">Advisor or Recruiter</option>
+      </select>
+
+      <label for="hometown">Hometown</label>
+      <input type="text" id="hometown" name="hometown" value="{{ profile.hometown if profile else '' }}">
+
+      <label for="high_school">High School</label>
+      <input type="text" id="high_school" name="high_school" placeholder="Current or graduated high school" value="{{ profile.high_school if profile else '' }}">
+
+      <label for="college">College</label>
+      <input type="text" id="college" name="college" placeholder="Current or graduated college" value="{{ profile.college if profile else '' }}">
+
+      <label for="bio">Bio</label>
+      <textarea id="bio" name="bio" placeholder="Tell people about yourself">{{ profile.bio if profile else '' }}</textarea>
+
+      <label for="interests">College/Career Interests</label>
+      <textarea id="interests" name="interests" placeholder="Example: computer science, business, pre-med, HBCUs, finance, law, engineering">{{ profile.interests if profile else '' }}</textarea>
+
+      <button type="submit">Save Profile</button>
+    </form>
+  </div>
+</body>
+</html>

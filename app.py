@@ -1,10 +1,13 @@
+import os
+
 from flask import Flask, flash, render_template, request, jsonify, redirect, url_for
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
 from recommendations import get_recommendations
-from models import db, User
+from models import db, User, Message, Profile
 
 ############################################################
 
@@ -12,6 +15,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev-key'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+
+UPLOAD_FOLDER = "static/uploads"
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # init database
 db.init_app(app)
@@ -65,6 +71,7 @@ def login():
                 return "Incorrect password."
         else:
             return "Email does not exist."
+        
     return render_template("login.html", user=current_user)
 
 # register user
@@ -75,34 +82,168 @@ def signup():
         username = request.form.get("username")
         password1 = request.form.get("password")
         password2 = request.form.get("password2")
+        role = request.form.get('role')
 
         email_exists = User.query.filter_by(email=email).first()
         username_exists = User.query.filter_by(username=username).first()
+
+        error = None
         # validation
         if email_exists:
-            return "Email is already in use."
+            error = "Email is already in use."
         elif username_exists:
-            return "Username is already in use."
+            error = "Username is already in use."
         elif password1 != password2:
-            return "Passwords don't match!"
+            error = "Passwords don't match!"
         elif len(username) < 2:
-            return "Username is too short."
+            error = "Username is too short."
         elif len(password1) < 6:
-            return "Password is too short."
+            error = "Password is too short."
         elif len(email) < 4:
-            return "Email is not valid."
-        else:
-            # add user to db
-            new_user = User(email=email, username=username)
-            new_user.set_password(password1)
+            error = "Email is not valid."
+        
+        if error:
+            return render_template(
+                "signup.html",
+                user=current_user,
+                error=error,
+                email=email,
+                username=username,
+                role=role
+            )
+        
+        # add user to db
+        new_user = User(email=email, username=username, role=role)
+        new_user.set_password(password1)
 
-            db.session.add(new_user)
-            db.session.commit()
+        db.session.add(new_user)
+        db.session.commit()
 
-            login_user(new_user, remember=True)
-            return redirect(url_for('home'))
+        login_user(new_user, remember=True)
+        return redirect(url_for('create_profile'))
 
     return render_template("signup.html", user=current_user)
+
+@app.route("/create-profile", methods=["GET", "POST"])
+@login_required
+def create_profile():
+    existing_profile = Profile.query.filter_by(user_id=current_user.id).first()
+
+    if request.method == "POST":
+        full_name = request.form.get("full_name")
+        education_level = request.form.get("education_level")
+        hometown = request.form.get("hometown")
+        high_school = request.form.get("high_school")
+        college = request.form.get("college")
+        bio = request.form.get("bio")
+        interests = request.form.get("interests")
+        file = request.files.get("photo")
+        filename = None
+
+        if file and file.filename != "":
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(filepath) 
+
+        if existing_profile:
+            existing_profile.full_name = full_name
+            existing_profile.education_level = education_level
+            existing_profile.hometown = hometown
+            existing_profile.high_school = high_school
+            existing_profile.college = college
+            existing_profile.bio = bio
+            existing_profile.interests = interests
+            existing_profile.photo = filename
+        else:
+            new_profile = Profile(
+                user_id=current_user.id,
+                full_name=full_name,
+                education_level=education_level,
+                hometown=hometown,
+                high_school=high_school,
+                college=college,
+                bio=bio,
+                interests=interests,
+                photo=filename
+            )
+            db.session.add(new_profile)
+
+        db.session.commit()
+        return redirect(url_for("profiles"))
+
+    return render_template("create_profile.html", profile=existing_profile)
+
+@app.route("/profiles")
+@login_required
+def profiles():
+    all_profiles = Profile.query.filter(Profile.user_id != current_user.id).all()
+    return render_template("profiles.html", profiles=all_profiles)
+
+@app.route("/my-profile")
+@login_required
+def my_profile():
+    profile = Profile.query.filter_by(user_id=current_user.id).first()
+
+    if not profile:
+        return redirect(url_for("create_profile"))
+
+    return render_template("my_profile.html", profile=profile)
+
+@app.route("/messages", methods=["GET", "POST"])
+@login_required
+def messages():
+
+    student_roles = [
+        "High School Student",
+        "College Student",
+        "Prospective Student"
+    ]
+
+    advisor_roles = [
+        "Career Advisor",
+        "College Application Advisor",
+        "College Recruiter"
+    ]
+
+    if current_user.role in student_roles:
+        users = User.query.filter(
+            User.id != current_user.id,
+            User.role.in_(advisor_roles)
+        ).all()
+    else:
+        users = User.query.filter(
+            User.id != current_user.id,
+            User.role.in_(student_roles)
+        ).all()
+     
+    users = User.query.filter(User.id != current_user.id).all()
+
+    if request.method == "POST":
+        receiver_id = request.form.get("receiver_id")
+        body = request.form.get("body")
+
+        if receiver_id and body:
+            new_message = Message(
+                sender_id=current_user.id,
+                receiver_id=receiver_id,
+                body=body
+            )
+
+            db.session.add(new_message)
+            db.session.commit()
+
+            return redirect(url_for("messages"))
+
+    all_messages = Message.query.filter(
+        (Message.sender_id == current_user.id) |
+        (Message.receiver_id == current_user.id)
+    ).order_by(Message.timestamp.desc()).all()
+
+    return render_template(
+        "messages.html",
+        users=users,
+        messages=all_messages
+    )
 
 @app.route("/logout")
 @login_required

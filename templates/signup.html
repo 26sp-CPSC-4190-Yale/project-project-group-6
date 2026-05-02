@@ -1,33 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-</head>
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up | CollegeMatch</title>
+
+  <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 24px;
-      line-height: 1.5;
-      background: #f7f7f7;
+      margin: 0;
+      background: linear-gradient(135deg, #dbeafe, #eef2ff);
+      color: #1f2937;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-</style>
+
+    .signup-container {
+      width: 100%;
+      max-width: 480px;
+      background: white;
+      padding: 36px;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2563eb;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 28px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 18px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+    }
+
+    button {
+      width: 100%;
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+      color: #4b5563;
+    }
+
+    .login-link a {
+      color: #2563eb;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .error-box {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    text-align: center;
+    font-weight: bold;
+    }
+  </style>
+</head>
+
 <body>
-    <h2>Sign Up</h2>
+  <div class="signup-container">
+    <h2>Create Your Account</h2>
+    <p class="subtitle">Join CollegeMatch to find colleges, scholarships, and advisors.</p>
+
+    {% if error %}
+        <div class="error-box">{{ error }}</div>
+    {% endif %}
+
     <form method="POST" action="{{ url_for('signup') }}">
-        <label for="email">Email:</label>
-        <input type="text" id="email" name="email" required><br>
-        <label for="username">User name:</label>
-        <input type="text" id="username" name="username" required><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br>
-        <label for="password2">Confirm Password:</label>
-        <input type="password" id="password2" name="password2" required><br>
-        <button type="submit">Sign Up</button>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" value="{{ email or '' }}" required>
+        
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" value="{{ username or '' }}" required>
+      
+      <select name="role" required>
+        <option value="">Select your role</option>
+        <option value="High School Student" {% if role == "High School Student" %}selected{% endif %}>High School Student</option>
+        <option value="College Student" {% if role == "College Student" %}selected{% endif %}>College Student</option>
+        <option value="Prospective Student" {% if role == "Prospective Student" %}selected{% endif %}>Prospective Student</option>
+        <option value="Career Advisor" {% if role == "Career Advisor" %}selected{% endif %}>Career Advisor</option>
+        <option value="College Application Advisor" {% if role == "College Application Advisor" %}selected{% endif %}>College Application Advisor</option>
+        <option value="College Recruiter" {% if role == "College Recruiter" %}selected{% endif %}>College Recruiter</option>
+    </select>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required>
+
+      <label for="password2">Confirm Password</label>
+      <input type="password" id="password2" name="password2" required>
+
+      <button type="submit">Sign Up</button>
     </form>
-    <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+
+    <p class="login-link">
+      Already have an account?
+      <a href="{{ url_for('login') }}">Login</a>
+    </p>
+  </div>
 </body>
 </html>
