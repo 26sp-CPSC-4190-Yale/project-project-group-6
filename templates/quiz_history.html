@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz History | CollegeMatch</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      color: #1f2937;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 60px;
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    .nav-links a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: #2563eb;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 820px;
+      margin: 40px auto;
+      padding: 24px;
+    }
+
+    h1 {
+      color: #2563eb;
+      margin-bottom: 6px;
+    }
+
+    .quiz-entry {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+    }
+
+    .quiz-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .quiz-date {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .retake-btn {
+      background: #2563eb;
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .retake-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .prefs-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .pref-tag {
+      background: #dbeafe;
+      color: #1d4ed8;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 10px;
+    }
+
+    .rec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rec-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 15px;
+    }
+
+    .rec-name {
+      font-weight: bold;
+      color: #111827;
+    }
+
+    .rec-meta {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .rec-score {
+      font-size: 12px;
+      font-weight: bold;
+      color: #2563eb;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+      color: #6b7280;
+    }
+
+    .empty-state a {
+      color: #2563eb;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="logo">CollegeMatch</div>
+    <div class="nav-links">
+      <a href="{{ url_for('home') }}">Home</a>
+      <a href="{{ url_for('takequiz') }}">Take Quiz</a>
+      <a href="{{ url_for('saved_matches') }}">Saved Matches</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Your Quiz History</h1>
+    <br>
+    
+    {% if quizzes %}
+      {% for quiz in quizzes %}
+        <div class="quiz-entry">
+
+          <div class="quiz-meta">
+            <span class="quiz-date">Taken on {{ quiz.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+            <a class="retake-btn" href="{{ url_for('takequiz') }}">Retake Quiz</a>
+          </div>
+
+          {% if quiz.result %}
+
+            {% set cs = quiz.result.classifier_scores %}
+            <div class="section-label">What we inferred about you</div>
+            <div class="prefs-row">
+              {% if cs.get('stimulation_tolerance', 0.5) > 0.6 %}
+                <span class="pref-tag">Large campus</span>
+              {% elif cs.get('stimulation_tolerance', 0.5) < 0.4 %}
+                <span class="pref-tag">Small campus</span>
+              {% endif %}
+
+              {% if cs.get('urban_pull', 0.5) > 0.6 %}
+                <span class="pref-tag">Urban</span>
+              {% elif cs.get('urban_pull', 0.5) < 0.4 %}
+                <span class="pref-tag">Rural / Town</span>
+              {% endif %}
+
+              {% if cs.get('prestige_orientation', 0.5) > 0.65 %}
+                <span class="pref-tag">Highly selective</span>
+              {% elif cs.get('prestige_orientation', 0.5) < 0.35 %}
+                <span class="pref-tag">Less selective</span>
+              {% endif %}
+
+              {% if cs.get('ceiling_seeking', 0.5) > 0.65 %}
+                <span class="pref-tag">Academically ambitious</span>
+              {% endif %}
+
+              {% if cs.get('cost_sensitivity', 0.5) > 0.6 %}
+                <span class="pref-tag">Cost-sensitive</span>
+              {% endif %}
+
+              {% if cs.get('roi_orientation', 0.5) > 0.65 %}
+                <span class="pref-tag">Outcome-focused</span>
+              {% endif %}
+
+              {% if cs.get('nature_pull', 0.5) > 0.65 %}
+                <span class="pref-tag">Values nature access</span>
+              {% endif %}
+
+              {% if cs.get('novelty_seeking', 0.5) > 0.65 %}
+                <span class="pref-tag">Open to going far</span>
+              {% elif cs.get('novelty_seeking', 0.5) < 0.35 %}
+                <span class="pref-tag">Prefers staying close</span>
+              {% endif %}
+
+              {% if cs.get('community_focus', 0.5) > 0.65 %}
+                <span class="pref-tag">Community-oriented</span>
+              {% endif %}
+            </div>
+
+            <div class="section-label">Top recommendations</div>
+            <div class="rec-list">
+              {% for college in quiz.result.recommendations[:3] %}
+                <div class="rec-row">
+                  <div>
+                    <div class="rec-name">{{ college.name }}</div>
+                    <div class="rec-meta">
+                      {{ college.state }} &middot; {{ college.size }} &middot; {{ college.locale }}
+                      {% if college.net_price %} &middot; ${{ "{:,}".format(college.net_price) }}/yr{% endif %}
+                    </div>
+                  </div>
+                  <div class="rec-score">{{ college.match_score }}</div>
+                </div>
+              {% endfor %}
+            </div>
+
+          {% else %}
+            <p style="color:#9ca3af; font-size:14px;">Results not available for this attempt.</p>
+          {% endif %}
+
+        </div>
+      {% endfor %}
+
+    {% else %}
+      <div class="empty-state">
+        <p>You haven't taken the quiz yet.</p>
+        <a href="{{ url_for('takequiz') }}">Take it now →</a>
+      </div>
+    {% endif %}
+
+  </div>
+</body>
+</html>

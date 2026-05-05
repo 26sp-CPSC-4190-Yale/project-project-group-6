@@ -95,6 +95,12 @@
       <label for="college">College</label>
       <input type="text" id="college" name="college" placeholder="Current or graduated college" value="{{ profile.college if profile else '' }}">
 
+      <label for="gpa">High School GPA <span style="font-weight:normal; color:#6b7280;">(optional — out of 5.0, helps match you to realistic schools)</span></label>
+      <input type="number" id="gpa" name="gpa" step="0.01" min="0" max="5.0" placeholder="e.g. 3.7" value="{{ profile.gpa if profile and profile.gpa else '' }}">
+
+      <label for="sat_score">SAT Score <span style="font-weight:normal; color:#6b7280;">(optional — out of 1600)</span></label>
+      <input type="number" id="sat_score" name="sat_score" min="400" max="1600" placeholder="e.g. 1250" value="{{ profile.sat_score if profile and profile.sat_score else '' }}">
+
       <label for="bio">Bio</label>
       <textarea id="bio" name="bio" placeholder="Tell people about yourself">{{ profile.bio if profile else '' }}</textarea>
 

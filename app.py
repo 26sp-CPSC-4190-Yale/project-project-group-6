@@ -1,4 +1,5 @@
 import os
+import random
 
 from flask import Flask, flash, render_template, request, jsonify, redirect, url_for
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user, UserMixin
@@ -6,8 +7,11 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
-from recommendations import get_recommendations
-from models import db, User, Message, Profile, SavedSchool, Scholarship, SavedScholarship
+from recommendations import get_recommendations_from_classifiers
+from models import (
+    db, User, Message, Profile, SavedSchool, Scholarship, SavedScholarship,
+    Question, Classifier, QuestionClassifier, QuizResponse, QuizAnswer, QuizResult, 
+)
 
 ############################################################
 
@@ -23,6 +27,27 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 db.init_app(app)
 with app.app_context():
     db.create_all()
+
+    # auto-seed quiz questions (skip if alr populated)
+    if Question.query.count() == 0:
+        from quiz_data import CLASSIFIERS as _CLS, QUESTIONS as _QS
+        for name, bidirectional in _CLS:
+            if not Classifier.query.filter_by(name=name).first():
+                db.session.add(Classifier(name=name, bidirectional=bidirectional))
+        db.session.commit()
+        _classifier_map = {c.name: c for c in Classifier.query.all()}
+        for text, loadings in _QS:
+            q = Question(text=text)
+            db.session.add(q)
+            db.session.flush()
+            for clf_name, weight, positive in loadings:
+                db.session.add(QuestionClassifier(
+                    question_id=q.id,
+                    classifier_id=_classifier_map[clf_name].id,
+                    weight=weight,
+                    positive=positive,
+                ))
+        db.session.commit()
 
 # qssign Login View
 login_manager = LoginManager()
@@ -46,13 +71,77 @@ def home():
 @app.route("/takequiz")
 @login_required
 def takequiz():
-    return render_template("quiz.html")
+    questions = Question.query.all()
+    random.shuffle(questions)
+    return render_template("quiz.html", questions=questions)
 
 @app.route("/recommend", methods=["POST"])
 @login_required
 def recommend():
-    answers = request.get_json()
-    recommendations = get_recommendations(answers)
+    data = request.get_json()
+    raw_answers = data.get("answers", {})  # {"question_id": answer_int}
+
+    # Accumulate weighted scores per classifier
+    classifier_raw = {}
+    classifier_max = {}
+
+    for qc in QuestionClassifier.query.all():
+        q_id = str(qc.question_id)
+        if q_id not in raw_answers:
+            continue
+        answer = int(raw_answers[q_id])  # 1–5
+        name = qc.classifier.name
+
+        if name not in classifier_raw:
+            classifier_raw[name] = 0.0
+            classifier_max[name] = 0.0
+
+        contribution = (answer - 1) / 4.0 if qc.positive else (5 - answer) / 4.0
+        classifier_raw[name] += contribution * qc.weight
+        classifier_max[name] += 1.0 * qc.weight
+
+    classifier_scores = {
+        name: round(classifier_raw[name] / classifier_max[name], 4)
+        for name in classifier_raw
+        if classifier_max[name] > 0
+    }
+
+    # pull relevant user profile data
+    home_state = None
+    user_gpa = None
+    user_sat = None
+    profile = Profile.query.filter_by(user_id=current_user.id).first()
+    if profile:
+        if profile.hometown:
+            parts = profile.hometown.rsplit(",", 1)
+            if len(parts) == 2:
+                home_state = parts[1].strip()[:2].upper()
+        user_gpa = profile.gpa
+        user_sat = profile.sat_score
+
+    recommendations = get_recommendations_from_classifiers(
+        classifier_scores, home_state=home_state, user_gpa=user_gpa, user_sat=user_sat
+    )
+
+    # save quiz attempt
+    quiz = QuizResponse(user_id=current_user.id)
+    db.session.add(quiz)
+    db.session.flush()
+
+    for q_id, answer in raw_answers.items():
+        db.session.add(QuizAnswer(
+            quiz_id=quiz.id,
+            question_id=int(q_id),
+            answer=int(answer)
+        ))
+
+    db.session.add(QuizResult(
+        quiz_id=quiz.id,
+        classifier_scores=classifier_scores,
+        recommendations=recommendations
+    ))
+    db.session.commit()
+
     return jsonify(recommendations)
 
 #apply login functionality
@@ -137,6 +226,10 @@ def create_profile():
         college = request.form.get("college")
         bio = request.form.get("bio")
         interests = request.form.get("interests")
+        gpa_raw = request.form.get("gpa")
+        sat_raw = request.form.get("sat_score")
+        gpa = float(gpa_raw) if gpa_raw else None
+        sat_score = int(sat_raw) if sat_raw else None
         file = request.files.get("photo")
         filename = None
 
@@ -154,6 +247,8 @@ def create_profile():
             existing_profile.bio = bio
             existing_profile.interests = interests
             existing_profile.photo = filename
+            existing_profile.gpa = gpa
+            existing_profile.sat_score = sat_score
         else:
             new_profile = Profile(
                 user_id=current_user.id,
@@ -164,7 +259,9 @@ def create_profile():
                 college=college,
                 bio=bio,
                 interests=interests,
-                photo=filename
+                photo=filename,
+                gpa=gpa,
+                sat_score=sat_score,
             )
             db.session.add(new_profile)
 
@@ -244,6 +341,13 @@ def messages():
         users=users,
         messages=all_messages
     )
+
+@app.route("/quiz-history")
+@login_required
+def quiz_history():
+    quizzes = QuizResponse.query.filter_by(user_id=current_user.id)\
+        .order_by(QuizResponse.created_at.desc()).all()
+    return render_template("quiz_history.html", quizzes=quizzes)
 
 @app.route("/save-match", methods=["POST"])
 @login_required
@@ -328,4 +432,4 @@ def logout():
     return redirect(url_for("home"))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, ssl_context="adhoc")
