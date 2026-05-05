@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
 from recommendations import get_recommendations
-from models import db, User, Message, Profile
+from models import db, User, Message, Profile, SavedSchool, Scholarship, SavedScholarship
 
 ############################################################
 
@@ -169,7 +169,7 @@ def create_profile():
             db.session.add(new_profile)
 
         db.session.commit()
-        return redirect(url_for("profiles"))
+        return redirect(url_for("my_profile"))
 
     return render_template("create_profile.html", profile=existing_profile)
 
@@ -244,6 +244,82 @@ def messages():
         users=users,
         messages=all_messages
     )
+
+@app.route("/save-match", methods=["POST"])
+@login_required
+def save_match():
+    data = request.get_json()
+
+    college_name = data.get("college_name")
+    website = data.get("website")
+
+    existing = SavedSchool.query.filter_by(
+        user_id=current_user.id,
+        college_name=college_name
+    ).first()
+
+    if not existing:
+        match_score = data.get("match_score")
+
+        saved = SavedSchool(
+            user_id=current_user.id,
+            college_name=college_name,
+            website=website,
+            match_score=match_score
+        )
+        db.session.add(saved)
+        db.session.commit()
+
+    return jsonify({"status": "success"})
+
+@app.route("/saved-matches")
+@login_required
+def saved_matches():
+    matches = SavedSchool.query.filter_by(user_id=current_user.id).all()
+    return render_template("saved_matches.html", matches=matches)
+
+@app.route("/scholarships")
+@login_required
+def scholarships():
+    category = request.args.get("category")
+    major = request.args.get("major")
+
+    query = Scholarship.query
+
+    if category:
+        query = query.filter_by(category=category)
+
+    if major:
+        query = query.filter_by(major=major)
+
+    all_scholarships = query.all()
+
+    return render_template("scholarships.html", scholarships=all_scholarships)
+
+@app.route("/save-scholarship/<int:scholarship_id>", methods=["POST"])
+@login_required
+def save_scholarship(scholarship_id):
+    existing = SavedScholarship.query.filter_by(
+        user_id=current_user.id,
+        scholarship_id=scholarship_id
+    ).first()
+
+    if not existing:
+        saved = SavedScholarship(
+            user_id=current_user.id,
+            scholarship_id=scholarship_id
+        )
+
+        db.session.add(saved)
+        db.session.commit()
+
+    return redirect(url_for("scholarships"))
+
+@app.route("/saved-scholarships")
+@login_required
+def saved_scholarships():
+    saved = SavedScholarship.query.filter_by(user_id=current_user.id).all()
+    return render_template("saved_scholarships.html", saved=saved)
 
 @app.route("/logout")
 @login_required

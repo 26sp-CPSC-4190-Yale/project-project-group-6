@@ -49,3 +49,29 @@ class Message(db.Model):
 
     sender = db.relationship("User", foreign_keys=[sender_id], backref="sent_messages")
     receiver = db.relationship("User", foreign_keys=[receiver_id], backref="received_messages")
+
+class SavedSchool(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    college_name = db.Column(db.String(150), nullable=False)
+    match_score = db.Column(db.Integer)
+    website = db.Column(db.String(300))
+
+class Scholarship(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    amount = db.Column(db.String(50))
+    deadline = db.Column(db.String(50))
+    eligibility = db.Column(db.Text)
+    category = db.Column(db.String(100))
+    major = db.Column(db.String(100))
+    link = db.Column(db.String(300))
+
+
+class SavedScholarship(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    scholarship_id = db.Column(db.Integer, db.ForeignKey("scholarship.id"), nullable=False)
+
+    scholarship = db.relationship("Scholarship")

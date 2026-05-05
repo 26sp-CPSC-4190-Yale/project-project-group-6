@@ -117,7 +117,9 @@
       {% if current_user.is_authenticated %}
         <a href="{{ url_for('takequiz') }}">Quiz</a>
         <a href="{{ url_for('profiles') }}">Profiles</a>
+        <a href="{{ url_for('saved_matches') }}">Saved Matches</a>
         <a href="{{ url_for('messages') }}">Messages</a>
+        <a href="{{ url_for('scholarships') }}">Scholarships</a>
         <a href="{{ url_for('my_profile') }}">My Profile</a>
         <a href="{{ url_for('logout') }}">Logout</a>
       {% else %}
