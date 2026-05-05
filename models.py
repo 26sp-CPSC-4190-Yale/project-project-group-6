@@ -1,9 +1,3 @@
-# Migration note — new tables added (pass to db.create_all()):
-#   question, classifier, question_classifier, quiz_response, quiz_answer, quiz_result
-#
-# Existing tables (unchanged):
-#   user, profile, message, saved_school, scholarship, saved_scholarship
-
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
