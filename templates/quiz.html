@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>College Match Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f7f9fc;
+      color: #1f2937;
+      line-height: 1.5;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 60px;
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    .nav-links a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: #2563eb;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 24px;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 44px 25px;
+      background: linear-gradient(135deg, #dbeafe, #eef2ff);
+      border-radius: 20px;
+      margin-bottom: 32px;
+    }
+
+    .hero h1 {
+      color: #2563eb;
+      font-size: 38px;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      color: #4b5563;
+      font-size: 17px;
+      margin: 0;
+    }
+
+    /* question card */
+    .question-card {
+      background: white;
+      border-radius: 14px;
+      padding: 22px 24px 18px;
+      margin-top: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+
+    .question-text {
+      font-size: 16px;
+      color: #111827;
+      margin: 0 0 18px 0;
+    }
+
+    /* slider */
+    .likert-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .likert-endpoint {
+      font-size: 12px;
+      color: #9ca3af;
+      white-space: nowrap;
+      flex-shrink: 0;
+      width: 108px;
+    }
+
+    .likert-endpoint.right {
+      text-align: right;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: #d1d5db;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: pointer;
+      border: 3px solid white;
+      box-shadow: 0 0 0 2px #2563eb;
+      transition: box-shadow 0.15s;
+    }
+
+    input[type="range"]:focus::-webkit-slider-thumb {
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: pointer;
+      border: 3px solid white;
+      box-shadow: 0 0 0 2px #2563eb;
+    }
+
+    .likert-value {
+      text-align: center;
+      font-size: 13px;
+      font-weight: bold;
+      color: #2563eb;
+      margin-top: 8px;
+      height: 18px;
+    }
+
+    /* ── Submit ── */
+    .submit-wrap {
+      margin-top: 32px;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background: #1d4ed8;
+    }
+
+    /* ── Results ── */
+    #results {
+      margin-top: 32px;
+    }
+
+    #results h2 {
+      color: #2563eb;
+    }
+
+    .college-card {
+      background: white;
+      border-radius: 16px;
+      padding: 22px;
+      margin-top: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      border: 1px solid #e5e7eb;
+    }
+
+    .college-card h3 {
+      color: #2563eb;
+      margin-top: 0;
+    }
+
+    .college-card a {
+      display: inline-block;
+      color: #2563eb;
+      font-weight: bold;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+
+    .save-btn {
+      margin-top: 12px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .save-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .reason-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0 4px;
+    }
+
+    .reason-tag {
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="logo">CollegeMatch</div>
+    <div class="nav-links">
+      <a href="{{ url_for('home') }}">Home</a>
+      <a href="{{ url_for('profiles') }}">Profiles</a>
+      <a href="{{ url_for('messages') }}">Messages</a>
+      <a href="{{ url_for('saved_matches') }}">Saved Matches</a>
+      <a href="{{ url_for('quiz_history') }}">Quiz History</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="hero">
+      <h1>Find Your Best-Fit College</h1>
+      <p>Rate how much you agree with each statement. There are no right answers — just yours.</p>
+    </div>
+
+    <form id="quizForm">
+      {% if questions %}
+        {% for q in questions %}
+          <div class="question-card">
+            <p class="question-text">{{ q.text }}</p>
+            <div class="likert-row">
+              <span class="likert-endpoint">Strongly Disagree</span>
+              <input
+                type="range"
+                min="1" max="5" step="1" value="3"
+                class="quiz-slider"
+                data-question-id="{{ q.id }}"
+                id="q{{ q.id }}"
+              >
+              <span class="likert-endpoint right">Strongly Agree</span>
+            </div>
+            <div class="likert-value" id="val{{ q.id }}">Neutral</div>
+          </div>
+        {% endfor %}
+
+        <div class="submit-wrap">
+          <button type="submit">Get My Recommendations</button>
+        </div>
+      {% else %}
+        <div class="question-card" style="text-align:center; color:#6b7280; padding:40px;">
+          <p>No questions found. Run <code>python seed_questions.py</code> to load the quiz.</p>
+        </div>
+      {% endif %}
+    </form>
+
+    <div id="results" class="hidden"></div>
+
+  </div>
+
+  <script>
+    const LABELS = ["", "Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"];
+
+    // init all sliders
+    document.querySelectorAll(".quiz-slider").forEach(slider => {
+      const display = document.getElementById("val" + slider.dataset.questionId);
+      display.textContent = LABELS[parseInt(slider.value)];
+      slider.addEventListener("input", () => {
+        display.textContent = LABELS[parseInt(slider.value)];
+      });
+    });
+
+    // submit
+    document.getElementById("quizForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const answers = {};
+      document.querySelectorAll(".quiz-slider").forEach(slider => {
+        answers[slider.dataset.questionId] = parseInt(slider.value);
+      });
+
+      try {
+        const res = await fetch("/recommend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ answers })
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch recommendations.");
+        const colleges = await res.json();
+        renderRecommendations(colleges);
+      } catch (err) {
+        document.getElementById("results").innerHTML = `<p>Error: ${err.message}</p>`;
+        document.getElementById("results").classList.remove("hidden");
+      }
+    });
+
+    function formatMoney(value) {
+      if (value === null || value === undefined) return "N/A";
+      return "$" + value.toLocaleString();
+    }
+
+    function renderRecommendations(colleges) {
+      const resultsDiv = document.getElementById("results");
+
+      if (!colleges.length) {
+        resultsDiv.innerHTML = "<p>No recommendations found.</p>";
+        resultsDiv.classList.remove("hidden");
+        return;
+      }
+
+      let html = "<h2>Your Recommended Colleges</h2>";
+
+      colleges.forEach((college, index) => {
+        const tags = (college.reasons && college.reasons.length)
+          ? college.reasons.map(r => `<span class="reason-tag">${r}</span>`).join("")
+          : "";
+
+        html += `
+          <div class="college-card">
+            <h3>${index + 1}. ${college.name}</h3>
+            ${tags ? `<div class="reason-tags">${tags}</div>` : ""}
+            <p><strong>State:</strong> ${college.state || "N/A"}</p>
+            <p><strong>Campus Size:</strong> ${college.size || "N/A"}</p>
+            <p><strong>Setting:</strong> ${college.locale || "N/A"}</p>
+            <p><strong>Net Price:</strong> ${formatMoney(college.net_price)}</p>
+            <p><strong>Admission Rate:</strong> ${college.admission_rate !== null ? college.admission_rate + "%" : "N/A"}</p>
+            <p><strong>Avg SAT:</strong> ${college.sat_avg || "N/A"}</p>
+            <p><strong>Median Earnings:</strong> ${formatMoney(college.salary)}</p>
+            <p><strong>Match Score:</strong> ${college.match_score}</p>
+            ${college.website ? `<a href="${college.website}" target="_blank">Visit Website</a>` : ""}
+            <br>
+            <button class="save-btn" onclick="saveMatch('${college.name}', '${college.website || ""}', ${college.match_score})">
+              Save Match
+            </button>
+          </div>
+        `;
+      });
+
+      resultsDiv.innerHTML = html;
+      resultsDiv.classList.remove("hidden");
+      resultsDiv.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function saveMatch(name, website, matchScore) {
+      fetch("/save-match", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ college_name: name, website, match_score: matchScore })
+      })
+      .then(res => res.json())
+      .then(() => alert("Saved!"))
+      .catch(() => alert("Error saving match."));
+    }
+  </script>
+
+</body>
+</html>

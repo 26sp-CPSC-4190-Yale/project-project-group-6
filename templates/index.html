@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Match Home</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f7f9fc;
+      color: #1f2937;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 60px;
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    .nav-links a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: #2563eb;
+      font-weight: bold;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 90px 25px;
+      background: linear-gradient(135deg, #dbeafe, #eef2ff);
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .hero p {
+      font-size: 20px;
+      max-width: 650px;
+      margin: 0 auto 30px;
+      color: #4b5563;
+    }
+
+    .btn {
+      display: inline-block;
+      background: #2563eb;
+      color: white;
+      padding: 14px 24px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      margin: 8px;
+    }
+
+    .btn:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #2563eb;
+      border: 2px solid #2563eb;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+      padding: 50px 60px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    .card h3 {
+      color: #2563eb;
+      margin-bottom: 10px;
+    }
+
+    .welcome-box {
+      margin-top: 25px;
+      font-weight: bold;
+      color: #374151;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="navbar">
+    <div class="logo">CollegeMatch</div>
+
+    <div class="nav-links">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('takequiz') }}">Quiz</a>
+        <a href="{{ url_for('profiles') }}">Profiles</a>
+        <a href="{{ url_for('saved_matches') }}">Saved Matches</a>
+        <a href="{{ url_for('messages') }}">Messages</a>
+        <a href="{{ url_for('scholarships') }}">Scholarships</a>
+        <a href="{{ url_for('quiz_history') }}">Quiz History</a>
+        <a href="{{ url_for('my_profile') }}">My Profile</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('signup') }}">Sign Up</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <section class="hero">
+    {% if current_user.is_authenticated %}
+      <div class="welcome-box">Welcome back, {{ current_user.username }}!</div>
+    {% endif %}
+
+    <h1>Find the College That Fits You Best</h1>
+
+    <p>
+      Take a personalized quiz to discover colleges that match your academic goals,
+      budget, location preferences, campus lifestyle, and career plans.
+    </p>
+
+    {% if current_user.is_authenticated %}
+      <a class="btn" href="{{ url_for('takequiz') }}">Take the Quiz</a>
+      <a class="btn btn-secondary" href="{{ url_for('messages') }}">Message an Advisor</a>
+    {% else %}
+      <a class="btn" href="{{ url_for('signup') }}">Get Started</a>
+      <a class="btn btn-secondary" href="{{ url_for('login') }}">Login</a>
+    {% endif %}
+  </section>
+
+  <section class="features">
+    <div class="card">
+      <h3>College Quiz</h3>
+      <p>Answer questions about your major, budget, location, and campus preferences.</p>
+    </div>
+
+    <div class="card">
+      <h3>Scholarship Finder</h3>
+      <p>Search for scholarships based on your background, interests, GPA, and goals.</p>
+    </div>
+
+    <div class="card">
+        <h3>Advisor Messaging</h3>
+        <p>Connect with college application and career advisors for personalized support.</p>
+      
+        {% if current_user.is_authenticated %}
+          <a class="btn" href="{{ url_for('messages') }}">Open Messages</a>
+        {% endif %}
+      </div>
+
+    <div class="card">
+      <h3>Saved Matches</h3>
+      <p>Keep track of colleges and scholarships you want to revisit later.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>CollegeMatch &copy; 2026 | Helping students find their best-fit college.</p>
+  </footer>
+
+</body>
+</html>

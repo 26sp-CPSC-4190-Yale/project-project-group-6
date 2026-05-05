@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Saved Scholarships</title>
+</head>
+<body>
+  <h1>Saved Scholarships</h1>
+
+  <a href="{{ url_for('scholarships') }}">← Back to Scholarship Finder</a>
+
+  {% for item in saved %}
+    <div>
+      <h2>{{ item.scholarship.name }}</h2>
+      <p><strong>Amount:</strong> {{ item.scholarship.amount }}</p>
+      <p><strong>Deadline:</strong> {{ item.scholarship.deadline }}</p>
+      <p>{{ item.scholarship.eligibility }}</p>
+
+      {% if item.scholarship.link %}
+        <a href="{{ item.scholarship.link }}" target="_blank">Apply</a>
+      {% endif %}
+    </div>
+  {% else %}
+    <p>You have not saved any scholarships yet.</p>
+  {% endfor %}
+</body>
+</html>

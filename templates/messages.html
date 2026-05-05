@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Messages | CollegeMatch</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 24px;
+    }
+
+    .card {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+
+    h1, h2 {
+      color: #2563eb;
+    }
+
+    select, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      box-sizing: border-box;
+      font-size: 15px;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .message {
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      background: #eef2ff;
+    }
+
+    .sent {
+      background: #dbeafe;
+    }
+
+    .received {
+      background: #f3f4f6;
+    }
+
+    .meta {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    a {
+      color: #2563eb;
+      font-weight: bold;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <a href="{{ url_for('home') }}">← Back to Home</a>
+
+    <h1>Advisor Messaging</h1>
+
+    <div class="card">
+      <h2>Send a Message</h2>
+        {% if current_user.role in ["High School Student", "College Student", "Prospective Student"] %}
+            <p>Select a college advisor, career coach, or recruiter to message.</p>
+        {% else %}
+            <p>Select a student to support with college, career, or application questions.</p>
+        {% endif %}
+
+      <form method="POST" action="{{ url_for('messages') }}">
+        <label for="receiver_id">Send to:</label>
+        <select id="receiver_id" name="receiver_id" required>
+            <option value="">Choose someone to message</option>
+            {% for user in users %}
+                <option value="{{ user.id }}">
+                    {{ user.username }} — {{ user.role }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="body">Message:</label>
+        <textarea id="body" name="body" placeholder="Type your message here..." required></textarea>
+
+        <button type="submit">Send Message</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Your Messages</h2>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="message {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+            <div class="meta">
+              {% if message.sender_id == current_user.id %}
+                You to {{ message.receiver.username }}
+              {% else %}
+                {{ message.sender.username }} to You
+              {% endif %}
+              — {{ message.timestamp }}
+            </div>
+
+            <p>{{ message.body }}</p>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>You do not have any messages yet.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</body>
+</html>

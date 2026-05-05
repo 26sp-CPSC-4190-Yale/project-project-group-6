@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scholarship Finder</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 24px;
+    }
+
+    h1 {
+      color: #2563eb;
+      text-align: center;
+    }
+
+    .filter-box, .card {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    select, button {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      margin-right: 10px;
+    }
+
+    button, .btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #2563eb;
+      border: 2px solid #2563eb;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <a href="{{ url_for('home') }}">← Back Home</a>
+
+    <h1>Scholarship Finder</h1>
+
+    <div class="filter-box">
+      <form method="GET" action="{{ url_for('scholarships') }}">
+        <select name="category">
+          <option value="">All Categories</option>
+          <option value="Need-Based">Need-Based</option>
+          <option value="Merit-Based">Merit-Based</option>
+          <option value="Leadership">Leadership</option>
+          <option value="Identity-Based">Identity-Based</option>
+          <option value="STEM">STEM</option>
+        </select>
+
+        <select name="major">
+          <option value="">All Majors</option>
+          <option value="Computer Science">Computer Science</option>
+          <option value="Business">Business</option>
+          <option value="Engineering">Engineering</option>
+          <option value="Any">Any</option>
+        </select>
+
+        <button type="submit">Filter</button>
+        <a class="btn btn-secondary" href="{{ url_for('saved_scholarships') }}">Saved Scholarships</a>
+      </form>
+    </div>
+
+    {% for scholarship in scholarships %}
+      <div class="card">
+        <h2>{{ scholarship.name }}</h2>
+        <p><strong>Amount:</strong> {{ scholarship.amount }}</p>
+        <p><strong>Deadline:</strong> {{ scholarship.deadline }}</p>
+        <p><strong>Category:</strong> {{ scholarship.category }}</p>
+        <p><strong>Major:</strong> {{ scholarship.major }}</p>
+        <p><strong>Eligibility:</strong> {{ scholarship.eligibility }}</p>
+
+        {% if scholarship.link %}
+          <a class="btn btn-secondary" href="{{ scholarship.link }}" target="_blank">Apply</a>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('save_scholarship', scholarship_id=scholarship.id) }}" style="display:inline;">
+          <button type="submit">Save Scholarship</button>
+        </form>
+      </div>
+    {% else %}
+      <p>No scholarships found.</p>
+    {% endfor %}
+  </div>
+</body>
+</html>
