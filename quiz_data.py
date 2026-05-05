@@ -1,10 +1,7 @@
 # (name, bidirectional)
-# bidirectional=True  → alignment formula: rewards schools that match the user's level
-#                        e.g. stimulation_tolerance=0.8 rewards large campuses,
-#                             stimulation_tolerance=0.2 rewards small ones
-# bidirectional=False → direct formula: higher classifier score rewards more of the feature
-#                        e.g. cost_sensitivity=0.9 strongly rewards cheap schools;
-#                             cost_sensitivity=0.1 contributes almost nothing
+# true = rewards schools that match the user's level 
+# false = rewards schools proportional to the feature value
+
 CLASSIFIERS = [
     ("stimulation_tolerance", True),
     ("urban_pull",            True),
