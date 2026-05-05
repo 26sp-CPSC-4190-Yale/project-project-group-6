@@ -157,9 +157,9 @@ def login():
                 login_user(user, remember=True)
                 return redirect(url_for('home'))
             else:
-                return "Incorrect password."
+                return render_template("login.html", error="Incorrect password.", email=email)
         else:
-            return "Email does not exist."
+            return render_template("login.html", error="Email does not exist.", email=email)
         
     return render_template("login.html", user=current_user)
 
